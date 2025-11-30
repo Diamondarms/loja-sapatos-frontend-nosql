@@ -1,0 +1,5 @@
+{
+  "name": "CRUD de Vendas",
+  "description": "Uma aplicação CRUD simples para gerenciar produtos, fornecedores, clientes e vendas, com uma seção de relatórios. Feito para uma apresentação de banco de dados.",
+  "requestFramePermissions": []
+}
