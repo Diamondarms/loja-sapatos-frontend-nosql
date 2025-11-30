@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { getReport, getSuppliers, getProducts, getCustomers } from '../services/api';
 import { SupplierModel, ProductModel, CustomerModel } from '../types';
@@ -71,7 +70,6 @@ const ReportsPage: React.FC = () => {
             if (Array.isArray(customersData)) {
                 const totalProfit = (Array.isArray(profitData) && profitData[0]?.total_profit) 
                     ? profitData[0].total_profit 
-                    // FIX: Cast profitData to any to resolve TypeScript error on unknown type.
                     : ((profitData as any)?.profit || "0.00");
 
                 const productName = customersData.length > 0 
@@ -94,19 +92,46 @@ const ReportsPage: React.FC = () => {
         }
     };
     
+    // Função auxiliar para renderizar o resultado do lucro (para evitar repetição de código)
+    const renderProfitResult = (result: any) => {
+        if (!result) return null;
+        
+        return (
+            <div className="mt-4 text-sm bg-slate-100 dark:bg-slate-900 p-4 rounded-lg">
+                {result.error ? (
+                    <p className="text-red-500">{result.error}</p>
+                ) : (
+                    <p className="font-semibold">
+                        Lucro Total: 
+                        <span className="font-bold text-green-500"> R$ {
+                            Number(
+                                (Array.isArray(result) && result[0]?.total_profit) 
+                                ? result[0].total_profit 
+                                : (result.profit || 0)
+                            ).toFixed(2).replace('.', ',')
+                        }</span>
+                    </p>
+                )}
+            </div>
+        );
+    };
+
     return (
         <div className="p-8">
             <h1 className="text-3xl font-bold mb-6">Relatórios</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 
+                {/* Lucro por Período - FORMATADO */}
                 <Card title="Lucro por Período">
                     <input type="date" value={profitPeriod.begin_date} onChange={e => setProfitPeriod({...profitPeriod, begin_date: e.target.value})} className="w-full p-2 border rounded bg-slate-200 dark:bg-slate-700 mb-2"/>
                     <input type="date" value={profitPeriod.final_date} onChange={e => setProfitPeriod({...profitPeriod, final_date: e.target.value})} className="w-full p-2 border rounded bg-slate-200 dark:bg-slate-700 mb-2"/>
                     <button onClick={() => generateReport(`/Reports/profit/period?begin_date=${profitPeriod.begin_date}&final_date=${profitPeriod.final_date}`, setProfitPeriodLoading, setProfitPeriodResult)} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">Gerar</button>
                     {profitPeriodLoading && <p className="text-blue-500 mt-4">Gerando...</p>}
-                    {profitPeriodResult && <pre className="mt-4 bg-slate-100 dark:bg-slate-900 p-4 rounded-lg text-sm overflow-x-auto">{JSON.stringify(profitPeriodResult, null, 2)}</pre>}
+                    {/* Alterado para usar a formatação visual correta */}
+                    {renderProfitResult(profitPeriodResult)}
                 </Card>
 
+                {/* Lucro por Fornecedor - FORMATADO */}
                 <Card title="Lucro por Fornecedor">
                     <input type="date" value={profitSupplier.begin_date} onChange={e => setProfitSupplier({...profitSupplier, begin_date: e.target.value})} className="w-full p-2 border rounded bg-slate-200 dark:bg-slate-700 mb-2"/>
                     <input type="date" value={profitSupplier.final_date} onChange={e => setProfitSupplier({...profitSupplier, final_date: e.target.value})} className="w-full p-2 border rounded bg-slate-200 dark:bg-slate-700 mb-2"/>
@@ -116,9 +141,11 @@ const ReportsPage: React.FC = () => {
                     </select>
                     <button onClick={() => generateReport(`/Reports/profit/supplier?begin_date=${profitSupplier.begin_date}&final_date=${profitSupplier.final_date}&supplier_id=${profitSupplier.supplier_id}`, setProfitSupplierLoading, setProfitSupplierResult)} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">Gerar</button>
                     {profitSupplierLoading && <p className="text-blue-500 mt-4">Gerando...</p>}
-                    {profitSupplierResult && <pre className="mt-4 bg-slate-100 dark:bg-slate-900 p-4 rounded-lg text-sm overflow-x-auto">{JSON.stringify(profitSupplierResult, null, 2)}</pre>}
+                    {/* Alterado para usar a formatação visual correta */}
+                    {renderProfitResult(profitSupplierResult)}
                 </Card>
 
+                {/* Lucro por Produto */}
                 <Card title="Lucro por Produto">
                     <select value={profitProduct.id} onChange={e => setProfitProduct({id: e.target.value})} className="w-full p-2 border rounded bg-slate-200 dark:bg-slate-700 mb-2">
                         <option value="">Selecione Produto</option>
@@ -126,24 +153,9 @@ const ReportsPage: React.FC = () => {
                     </select>
                     <button onClick={() => generateReport(`/Reports/profit/product/${profitProduct.id}`, setProfitProductLoading, setProfitProductResult)} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">Gerar</button>
                     {profitProductLoading && <p className="text-blue-500 mt-4">Gerando...</p>}
-                    {profitProductResult && (
-                         <div className="mt-4 text-sm bg-slate-100 dark:bg-slate-900 p-4 rounded-lg">
-                            {profitProductResult.error ? (
-                                <p className="text-red-500">{profitProductResult.error}</p>
-                            ) : (
-                                <p className="font-semibold">
-                                    Lucro Total: 
-                                    <span className="font-bold text-green-500"> R$ {
-                                        Number(
-                                            (Array.isArray(profitProductResult) && profitProductResult[0]?.total_profit) 
-                                            ? profitProductResult[0].total_profit 
-                                            : (profitProductResult.profit || 0)
-                                        ).toFixed(2).replace('.', ',')
-                                    }</span>
-                                </p>
-                            )}
-                        </div>
-                    )}
+                    {/* Mantido e encapsulado na função renderProfitResult ou usando inline como antes. 
+                        Para manter consistência, usarei a função auxiliar que criei, mas a lógica inline original também funcionaria. */}
+                    {renderProfitResult(profitProductResult)}
                 </Card>
 
                 <Card title="Método de Pagamento Mais Usado">

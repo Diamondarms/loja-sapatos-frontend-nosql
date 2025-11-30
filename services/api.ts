@@ -27,7 +27,7 @@ export const updateProductStock = (id: string, quantity: number) =>
   fetch(`${API_BASE_URL}/Products/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ quantity }),
+    body: JSON.stringify({ stock: quantity }),
   }).then(handleResponse);
 export const deleteProduct = (id: string) => 
   fetch(`${API_BASE_URL}/Products/${id}`, { method: 'DELETE' }).then(handleResponse);
@@ -53,11 +53,11 @@ export const createCustomer = (customer: Omit<CustomerModel, 'customer_id'>) =>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(customer),
   }).then(handleResponse);
-export const updateCustomerPhone = (id: string, new_phone: string) =>
+export const updateCustomerPhone = (id: string, phone: string) =>
   fetch(`${API_BASE_URL}/Customers/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ new_phone }),
+    body: JSON.stringify({ phone: phone }),
   }).then(handleResponse);
 export const deleteCustomer = (id: string) =>
   fetch(`${API_BASE_URL}/Customers/${id}`, { method: 'DELETE' }).then(handleResponse);
